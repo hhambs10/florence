@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Abbonamento Urbano</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f2f2f7;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── SCHERMATA PRINCIPALE ── */
+    #screen {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 430px;
+      min-height: 100dvh;
+      background: #fff;
+      padding: 56px 24px 40px;
+      position: relative;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: #000;
+      line-height: 1;
+      padding: 4px;
+    }
+
+    .header {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .ticket-icon {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    .title {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.3px;
+      color: #000;
+      text-transform: uppercase;
+    }
+
+    .date-card {
+      background: #d8f2ee;
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin-bottom: 24px;
+    }
+
+    .date-range {
+      font-size: 15px;
+      font-weight: 700;
+      color: #000;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    .location-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pin-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .location-text {
+      font-size: 15px;
+      font-weight: 500;
+      color: #000;
+    }
+
+    .description {
+      font-size: 14px;
+      color: #333;
+      line-height: 1.55;
+      margin-bottom: 6px;
+    }
+
+    .more-link {
+      color: #2a7abf;
+      font-size: 14px;
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 28px;
+    }
+
+    .cf-label {
+      font-size: 15px;
+      color: #000;
+      font-weight: 400;
+    }
+
+    .cf-value {
+      font-size: 15px;
+      font-weight: 400;
+      color: #000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* ── PANNELLO CONFIG ── */
+    .config-fab {
+      position: fixed;
+      bottom: 28px;
+      right: 22px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: none;
+      z-index: 100;
+    }
+
+    .config-fab svg { display: none; }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 200;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .overlay.open { display: flex; }
+
+    .panel {
+      background: #fff;
+      width: 100%;
+      max-width: 430px;
+      border-radius: 22px 22px 0 0;
+      padding: 24px 22px 36px;
+      animation: slideUp 0.25s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(60px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .panel-handle {
+      width: 40px;
+      height: 4px;
+      background: #d1d1d6;
+      border-radius: 99px;
+      margin: 0 auto 20px;
+    }
+
+    .panel h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #000;
+      margin-bottom: 20px;
+    }
+
+    .field-group {
+      margin-bottom: 16px;
+    }
+
+    .field-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6e6e73;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .field-group input {
+      width: 100%;
+      border: 1.5px solid #d1d1d6;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 15px;
+      color: #000;
+      outline: none;
+      background: #f9f9f9;
+      transition: border-color 0.15s;
+    }
+    .field-group input:focus { border-color: #3ebfad; background: #fff; }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .apply-btn {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      background: #3ebfad;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .apply-btn:active { opacity: 0.85; }
+  </style>
+</head>
+<body>
+
+<!-- SCHERMATA PRINCIPALE -->
+<div id="screen">
+  <button class="close-btn" onclick="history.back()">✕</button>
+
+  <div class="header">
+    <img class="ticket-icon" src="data:image/png;base64,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" alt="icon" />
+    <h1 class="title">URBANO CAPOLUOGO 1 MESE ISEE</h1>
+  </div>
+
+  <div class="date-card">
+    <div class="date-range" id="dateDisplay">
+      Dal 01/06/2026 alle 00:00<br>al 30/06/2026 alle 23:59
+    </div>
+    <div class="location-row">
+      <!-- Pin icon -->
+      <svg class="pin-icon" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 1C6.24 1 4 3.24 4 6c0 3.75 5 11 5 11s5-7.25 5-11c0-2.76-2.24-5-5-5z" fill="#3ebfad"/>
+        <circle cx="9" cy="6" r="2" fill="#fff"/>
+      </svg>
+      <span class="location-text">Firenze</span>
+    </div>
+  </div>
+
+  <p class="description">
+    In caso di controllo esibire la tessera sanitaria. In case of verification, you must show your health card or tax code. Valido per il servizio urbano della città indicata, nel
+  </p>
+  <a class="more-link" href="#">Per saperne di più</a>
+
+  <div>
+    <span class="cf-label">Codice fiscale </span><span class="cf-value" id="cfDisplay"></span>
+  </div>
+</div>
+
+<!-- FAB CONFIG -->
+<button class="config-fab" onclick="openPanel()" title="Configura">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+  </svg>
+</button>
+
+<!-- PANNELLO CONFIGURAZIONE -->
+<div class="overlay" id="overlay" onclick="closeOnBg(event)">
+  <div class="panel">
+    <div class="panel-handle"></div>
+    <h2>Configura biglietto</h2>
+
+    <div class="field-group">
+      <label>Codice Fiscale</label>
+      <input type="text" id="cfInput" placeholder="Es. RSSMRA85M01H501Z" maxlength="16"
+             oninput="this.value = this.value.toUpperCase()" />
+    </div>
+
+    <div class="row-2">
+      <div class="field-group">
+        <label>Data inizio</label>
+        <input type="date" id="startDate" />
+      </div>
+      <div class="field-group">
+        <label>Data fine</label>
+        <input type="date" id="endDate" />
+      </div>
+    </div>
+
+    <button class="apply-btn" onclick="applyConfig()">Applica</button>
+  </div>
+</div>
+
+<script>
+  // Valori di default
+  const defaults = {
+    cf: '',
+    start: '2026-06-01',
+    end: '2026-06-30'
+  };
+
+  // Carica da localStorage se presenti
+  const saved = JSON.parse(localStorage.getItem('isee_config') || '{}');
+  const cfg = { ...defaults, ...saved };
+
+  function fmt(dateStr) {
+    // dateStr = "YYYY-MM-DD"
+    const [y, m, d] = dateStr.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  function render() {
+    document.getElementById('cfDisplay').textContent = cfg.cf || '';
+    document.getElementById('dateDisplay').innerHTML =
+      `Dal ${fmt(cfg.start)} alle 00:00<br>al ${fmt(cfg.end)} alle 23:59`;
+  }
+
+  function openPanel() {
+    document.getElementById('cfInput').value = cfg.cf;
+    document.getElementById('startDate').value = cfg.start;
+    document.getElementById('endDate').value = cfg.end;
+    document.getElementById('overlay').classList.add('open');
+  }
+
+  function closePanel() {
+    document.getElementById('overlay').classList.remove('open');
+  }
+
+  function closeOnBg(e) {
+    if (e.target === document.getElementById('overlay')) closePanel();
+  }
+
+  function applyConfig() {
+    cfg.cf    = document.getElementById('cfInput').value.trim();
+    cfg.start = document.getElementById('startDate').value || defaults.start;
+    cfg.end   = document.getElementById('endDate').value   || defaults.end;
+    localStorage.setItem('isee_config', JSON.stringify(cfg));
+    render();
+    closePanel();
+  }
+
+  render();
+</script>
+</body>
+</html>
