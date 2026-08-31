@@ -31,13 +31,13 @@
     button, input { font: inherit; }
 
     .app {
-      height: 100svh;
+      min-height: 100svh;
       max-width: 560px;
       margin: 0 auto;
       padding: calc(20px + env(safe-area-inset-top)) 22px calc(20px + env(safe-area-inset-bottom));
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow-x: hidden;
     }
 
     .close {
@@ -84,31 +84,34 @@
       background: var(--panel);
     }
 
-    /* Una riga contiene due blocchi indipendenti: etichetta + data e orario.
-       Il secondo blocco può andare a capo, quindi non si sovrappone mai alla data. */
     .date-line {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      gap: 4px 8px;
+      display: grid;
+      grid-template-columns: 36px minmax(108px, 1fr);
+      grid-template-areas:
+        "prefix date"
+        ". time";
+      row-gap: 2px;
+      column-gap: 8px;
       width: 100%;
       font-size: clamp(17px, 4.65vw, 24px);
-      line-height: 1.45;
+      line-height: 1.35;
       font-weight: 750;
     }
 
-    .date-line + .date-line { margin-top: 7px; }
+    .date-line + .date-line { margin-top: 10px; }
 
     .date-prefix {
-      flex: 0 0 auto;
-      min-width: 31px;
+      grid-area: prefix;
+      align-self: center;
+      white-space: nowrap;
     }
 
     .date-picker {
       position: relative;
       display: grid;
-      flex: 0 0 108px;
-      width: 108px;
+      grid-area: date;
+      justify-self: start;
+      width: 112px;
       height: 34px;
       cursor: pointer;
     }
@@ -136,7 +139,6 @@
 
     .date-display {
       align-self: center;
-      min-width: 0;
       padding-bottom: 1px;
       border-bottom: 1px solid transparent;
       color: var(--text);
@@ -147,7 +149,8 @@
     }
 
     .date-time {
-      flex: 0 0 auto;
+      grid-area: time;
+      min-width: 0;
       white-space: nowrap;
     }
 
@@ -280,16 +283,19 @@
       .ticket-icon { width: 47px; }
       h1 { font-size: 23px; }
       .period { padding-left: 16px; padding-right: 16px; }
-      .date-line { font-size: 16px; }
-      .date-prefix { min-width: 27px; }
-      .date-picker { flex-basis: 96px; width: 96px; }
+      .date-line {
+        grid-template-columns: 31px minmax(96px, 1fr);
+        column-gap: 5px;
+        font-size: 16px;
+      }
+      .date-picker { width: 100px; }
       .tax-row { font-size: 16px; gap: 4px; }
     }
   </style>
 </head>
 <body>
   <main class="app">
-    <button class="close" type="button" aria-label="Chiudi" onclick="history.back()">×</button>
+    <button class="close" type="button" aria-label="Chiudi" onclick="history.back()">×¬</button>
 
     <header class="heading">
       <svg class="ticket-icon" viewBox="0 0 100 70" aria-hidden="true" fill="none">
@@ -302,7 +308,7 @@
       <h1>URBANO CAPOLUOGO 1<br>MESE ISEE</h1>
     </header>
 
-    <section class="period" aria-label="Periodo di validità">
+    <section class="period" aria-label="Periodo di validità¬°">
       <div class="date-line">
         <span class="date-prefix">Dal</span>
         <label class="date-picker" aria-label="Modifica data di inizio">
@@ -366,6 +372,15 @@
       endDateDisplay.textContent = formatItalianDate(endDate.value);
     }
 
+    function saveDates() {
+      localStorage.setItem('urbano_startDate', startDate.value);
+      localStorage.setItem('urbano_endDate', endDate.value);
+    }
+
+    function saveTaxCode() {
+      localStorage.setItem('urbano_taxCode', taxCode.value);
+    }
+
     function normalizeTaxCode() {
       taxCode.value = taxCode.value
         .toUpperCase()
@@ -373,13 +388,17 @@
         .slice(0, 16);
     }
 
-    taxCode.addEventListener('input', normalizeTaxCode);
+    taxCode.addEventListener('input', () => {
+      normalizeTaxCode();
+      saveTaxCode();
+    });
 
     endDate.addEventListener('change', () => {
       if (startDate.value && endDate.value < startDate.value) {
         endDate.value = startDate.value;
       }
       updateDateDisplays();
+      saveDates();
     });
 
     startDate.addEventListener('change', () => {
@@ -387,6 +406,7 @@
         endDate.value = startDate.value;
       }
       updateDateDisplays();
+      saveDates();
     });
 
     document.getElementById('infoButton').addEventListener('click', () => {
@@ -404,13 +424,30 @@
     });
 
     document.getElementById('moreInfo').addEventListener('click', () => {
-      dialogText.textContent = 'Questa è una schermata dimostrativa. Per un servizio reale, la validità del titolo dovrebbe essere verificata da un sistema server-side.';
+      dialogText.textContent = 'Questa è una schermata dimostrativa. Per un servizio reale, la validità¬° del titolo dovrebbe essere verificata da un sistema server-side.';
       dialog.showModal();
     });
 
     document.getElementById('dialogClose').addEventListener('click', () => dialog.close());
 
-    updateDateDisplays();
+    // Carica dati salvati all'avvio
+    (function loadSavedData() {
+      const savedStart = localStorage.getItem('urbano_startDate');
+      const savedEnd = localStorage.getItem('urbano_endDate');
+      const savedTax = localStorage.getItem('urbano_taxCode');
+
+      if (savedStart) {
+        startDate.value = savedStart;
+      }
+      if (savedEnd) {
+        endDate.value = savedEnd;
+      }
+      if (savedTax) {
+        taxCode.value = savedTax;
+      }
+
+      updateDateDisplays();
+    })();
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
