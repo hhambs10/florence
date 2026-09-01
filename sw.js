@@ -1,4 +1,4 @@
-const CACHE_NAME = 'urbano-capoluogo-v2';
+const CACHE_NAME = 'urbano-capoluogo-v3';
 
 const APP_FILES = [
   './',
