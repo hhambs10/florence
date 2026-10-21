@@ -153,6 +153,19 @@
       line-height: 1.35;
     }
 
+    .instructions-extra {
+      display: block;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 350ms ease, opacity 250ms ease;
+    }
+
+    .instructions-extra.is-open {
+      max-height: 100px;
+      opacity: 1;
+    }
+
     .more-info {
       width: fit-content;
       margin-top: 14px;
@@ -295,10 +308,11 @@
     </section>
 
     <p class="instructions">
-      In caso di controllo esibire la tessera sanitaria. In case of verification, you must show your health card or tax code. Valido per il servizio urbano della città indicata, nel periodo selezionato.
+      In caso di controllo esibire la tessera sanitaria. In case of verification, you must show your health card or tax code. Valido per il servizio urbano della città indicata, nel
+      <span class="instructions-extra" id="instructionsExtra">periodoindicato. Valid for urban services in the specified city, in the indicated period.</span>
     </p>
 
-    <button class="more-info" type="button" id="moreInfo">Per saperne di più</button>
+    <button class="more-info" type="button" id="moreInfo" aria-expanded="false" aria-controls="instructionsExtra">Per saperne di più</button>
 
     <section class="tax-section">
       <div class="tax-row">
@@ -382,9 +396,21 @@
       saveFormData();
     });
 
-    document.getElementById('moreInfo').addEventListener('click', () => {
-      dialogText.textContent = 'Questa è una schermata dimostrativa. Per un servizio reale, la validità del titolo dovrebbe essere verificata da un sistema server-side.';
-      dialog.showModal();
+    const moreInfo = document.getElementById('moreInfo');
+    const instructionsExtra = document.getElementById('instructionsExtra');
+
+    moreInfo.addEventListener('click', () => {
+      const isOpen = moreInfo.getAttribute('aria-expanded') === 'true';
+
+      if (isOpen) {
+        instructionsExtra.classList.remove('is-open');
+        moreInfo.setAttribute('aria-expanded', 'false');
+        moreInfo.textContent = 'Per saperne di più';
+      } else {
+        instructionsExtra.classList.add('is-open');
+        moreInfo.setAttribute('aria-expanded', 'true');
+        moreInfo.textContent = 'Vedi di meno';
+      }
     });
 
     document.getElementById('dialogClose').addEventListener('click', () => dialog.close());
